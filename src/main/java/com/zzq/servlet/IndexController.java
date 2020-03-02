@@ -10,20 +10,20 @@ import java.util.Map;
 @RequstClass("/index")
 public class IndexController {
 
-    @RequestPath(path = "/index")
+    @RequestPath(path = "/index.do")
     public String index(){
         return "/upload.html";
     }
 
     @ResponseBody
-    @RequestPath(path = "/zhangzq")
+    @RequestPath(path = "/zhangzq.do")
     public Object zhangzq(){
         return "controller by zhangzq.... \n" +
                 "controller by servlet....";
     }
 
     @ResponseBody
-    @RequestPath(path = "/getJson")
+    @RequestPath(path = "/getJson.do")
     public Map getJson(){
         HashMap<Object, Object> map = new HashMap<>();
         map.put("name","zhangzq");

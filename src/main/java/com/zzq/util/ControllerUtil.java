@@ -63,4 +63,29 @@ public class ControllerUtil {
         return stringBuffer.toString();
     }
 
+    /**
+     * 去除多余的符号，比如 /x//x 转成 /x/x
+     *
+     * @param link
+     * @param delimit
+     * @return
+     */
+    public static String distinctString(String link, String delimit) {
+        if (!link.contains(delimit)) {
+            return link;
+        }
+        String[] split = link.split(delimit);
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < split.length; i++) {
+            if (StringUtils.isNotBlank(split[i])) {
+                if (i == (split.length-1)) {
+                    sb.append("/").append(split[i]);
+                } else {
+                    sb.append("/").append(split[i]);
+                }
+            }
+        }
+        return sb.toString();
+    }
+
 }

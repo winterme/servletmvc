@@ -12,7 +12,7 @@ import java.util.Map;
 @RequstClass("/index")
 public class RegisterController {
 
-    @RequestPath(path = "/lcm")
+    @RequestPath(path = "/lcm.do")
     @ResponseBody
     public Object lcm(HttpServletRequest request) throws IOException {
         // map里面存储的就是 前端传过来的参数集

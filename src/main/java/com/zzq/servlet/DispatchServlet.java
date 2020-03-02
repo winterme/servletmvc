@@ -6,6 +6,7 @@ import com.zzq.servlet.annotation.ComponentScan;
 import com.zzq.servlet.annotation.RequestPath;
 import com.zzq.servlet.annotation.RequstClass;
 import com.zzq.servlet.annotation.ResponseBody;
+import com.zzq.util.ControllerUtil;
 import com.zzq.util.StringUtils;
 import javassist.ClassPool;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 @ComponentScan("com.zzq.servlet")
-@WebServlet(urlPatterns = {"/index", "/index/*"})
+@WebServlet(urlPatterns = { "*.do"})
 public class DispatchServlet extends HttpServlet {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -50,6 +51,10 @@ public class DispatchServlet extends HttpServlet {
 
         String path = req.getRequestURI().toString();
 
+        if(StringUtils.isNotBlank(req.getContextPath())){
+            path = ControllerUtil.distinctString(path.replace(req.getContextPath(),"/") , "/");
+        }
+
         if (!map.keySet().contains(path)) {
             resp.getWriter().print(path + " is not found !");
             return;
@@ -70,6 +75,11 @@ public class DispatchServlet extends HttpServlet {
         // 跳转页面
         resp.sendRedirect(String.valueOf(result));
 
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doGet(req,resp);
     }
 
     private Object executorMethod(String mpath, HttpServletRequest request, HttpServletResponse response) {
