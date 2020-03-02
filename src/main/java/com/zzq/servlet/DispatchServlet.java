@@ -2,11 +2,12 @@ package com.zzq.servlet;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zzq.servlet.annotation.ComponentScan;
 import com.zzq.servlet.annotation.RequestPath;
 import com.zzq.servlet.annotation.RequstClass;
 import com.zzq.servlet.annotation.ResponseBody;
+import com.zzq.util.StringUtils;
 import javassist.ClassPool;
-import javassist.CtClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,10 +23,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+@ComponentScan("com.zzq.servlet")
 @WebServlet(urlPatterns = {"/index", "/index/*"})
 public class DispatchServlet extends HttpServlet {
-
-    private static final String BASE_PACKAGE = "com.zzq.servlet";
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -54,7 +54,7 @@ public class DispatchServlet extends HttpServlet {
             resp.getWriter().print(path + " is not found !");
             return;
         }
-        Object result = executorMethod(path , req , resp);
+        Object result = executorMethod(path, req, resp);
 
         if (result == null) {
             return;
@@ -72,7 +72,7 @@ public class DispatchServlet extends HttpServlet {
 
     }
 
-    private Object executorMethod(String mpath , HttpServletRequest request , HttpServletResponse response) {
+    private Object executorMethod(String mpath, HttpServletRequest request, HttpServletResponse response) {
         try {
             HashMap<Method, Class> hashMap = map.get(mpath);
             Method next = hashMap.keySet().iterator().next();
@@ -81,11 +81,11 @@ public class DispatchServlet extends HttpServlet {
             Class aClass = hashMap.get(next);
 
             Object o = null;
-            if(next.getParameterTypes().length==1){
-                o = next.invoke(aClass.newInstance() , request);
-            }else if(next.getParameterTypes().length==2){
+            if (next.getParameterTypes().length == 1) {
+                o = next.invoke(aClass.newInstance(), request);
+            } else if (next.getParameterTypes().length == 2) {
                 next.invoke(aClass.newInstance(), request, response);
-            }else{
+            } else {
                 o = next.invoke(aClass.newInstance());
             }
 
@@ -96,26 +96,39 @@ public class DispatchServlet extends HttpServlet {
         return "出错了";
     }
 
+    public void getClasses(ArrayList<Class> classes, File file, ClassPool classPool) throws IOException, ClassNotFoundException {
+        for (File listFile : file.listFiles()) {
+            if (listFile == null || !file.exists()) {
+                return ;
+            }
+            if (listFile.isDirectory()) {
+                getClasses(classes, listFile, classPool);
+            }
+            if (listFile.isFile()) {
+                classes.add(Class.forName(classPool.makeClass(new FileInputStream(listFile)).getName()));
+            }
+        }
+    }
+
     public void getAllRequestPaths() {
         try {
+            String BASE_PACKAGE = "";
+            if (this.getClass().isAnnotationPresent(ComponentScan.class)) {
+                BASE_PACKAGE = this.getClass().getAnnotation(ComponentScan.class).value();
+                if (!StringUtils.isNotBlank(BASE_PACKAGE)) {
+                    throw new RuntimeException("DispatchServlet 必须使用 @ComponentScan 覆盖!!!并且必须指定扫描包名！");
+                }
+            } else {
+                throw new RuntimeException("DispatchServlet 必须使用 @ComponentScan 覆盖!!!");
+            }
             // class pool
             ClassPool classPool = ClassPool.getDefault();
 
-            ArrayList<Class> classes = new ArrayList<>();
-
             String classpath = this.getClass().getResource("/").getFile();
-            String packagePath = classpath + BASE_PACKAGE.replace(new String(new byte[]{(byte)46}) , "/");
+            String packagePath = classpath + BASE_PACKAGE.replace(new String(new byte[]{(byte) 46}), "/");
 
-            for (File file : new File(packagePath).listFiles()) {
-                if (file.isFile()) {
-                    try {
-                        // 添加class对象
-                        classes.add(Class.forName(classPool.makeClass(new FileInputStream(file)).getName()));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+            ArrayList<Class> classes = new ArrayList<>();
+            getClasses(classes, new File(packagePath) , classPool);
 
             for (Class aClass : classes) {
                 if (aClass.isAnnotationPresent(RequstClass.class)) {
