@@ -7,6 +7,7 @@ import com.zzq.util.ControllerUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Map;
 
 @RequstClass("/index")
 public class RegisterController {
@@ -14,7 +15,14 @@ public class RegisterController {
     @RequestPath(path = "/lcm")
     @ResponseBody
     public Object lcm(HttpServletRequest request) throws IOException {
-        return "lcm is best beautiful , I love she O(∩_∩)O parameter" + ControllerUtil.getParam(request).get("id");
+        // map里面存储的就是 前端传过来的参数集
+        // 例如 link?id=xx&name=xxx
+        // map 里面就是  {id:xx,name:xxx}
+        // 需要 id 则就是 param.get("id")
+        Map<String, String> param = ControllerUtil.getParam(request);
+        String id = param.get("id");
+
+        return "lcm is best beautiful , I love she O(∩_∩)O parameter =>" + id ;
     }
 
 }

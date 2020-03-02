@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zzq.servlet.annotation.RequestPath;
 import com.zzq.servlet.annotation.RequstClass;
 import com.zzq.servlet.annotation.ResponseBody;
+import javassist.ClassPool;
+import javassist.CtClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +16,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -21,6 +24,8 @@ import java.util.HashMap;
 
 @WebServlet(urlPatterns = {"/index", "/index/*"})
 public class DispatchServlet extends HttpServlet {
+
+    private static final String BASE_PACKAGE = "com.zzq.servlet";
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -93,17 +98,19 @@ public class DispatchServlet extends HttpServlet {
 
     public void getAllRequestPaths() {
         try {
+            // class pool
+            ClassPool classPool = ClassPool.getDefault();
+
             ArrayList<Class> classes = new ArrayList<>();
 
             String classpath = this.getClass().getResource("/").getFile();
-            String packagePath = classpath + "/com/zzq/servlet";
+            String packagePath = classpath + BASE_PACKAGE.replace(new String(new byte[]{(byte)46}) , "/");
 
             for (File file : new File(packagePath).listFiles()) {
                 if (file.isFile()) {
                     try {
-                        String name = file.getName();
-                        name = name.substring(0, name.indexOf((byte) 46));
-                        classes.add(Class.forName("com.zzq.servlet." + name));
+                        // 添加class对象
+                        classes.add(Class.forName(classPool.makeClass(new FileInputStream(file)).getName()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
