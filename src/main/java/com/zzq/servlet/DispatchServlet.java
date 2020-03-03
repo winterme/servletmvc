@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 @ComponentScan("com.zzq.servlet")
-@WebServlet(urlPatterns = { "*.do"})
+@WebServlet(urlPatterns = {"*.do"})
 public class DispatchServlet extends HttpServlet {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -51,8 +51,8 @@ public class DispatchServlet extends HttpServlet {
 
         String path = req.getRequestURI().toString();
 
-        if(StringUtils.isNotBlank(req.getContextPath())){
-            path = ControllerUtil.distinctString(path.replace(req.getContextPath(),"/") , "/");
+        if (StringUtils.isNotBlank(req.getContextPath())) {
+            path = ControllerUtil.distinctString(path.replace(req.getContextPath(), "/"), "/");
         }
 
         if (!map.keySet().contains(path)) {
@@ -73,13 +73,13 @@ public class DispatchServlet extends HttpServlet {
         }
 
         // 跳转页面
-        resp.sendRedirect(String.valueOf(result));
+        resp.sendRedirect(req.getContextPath() + String.valueOf(result));
 
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        doGet(req,resp);
+        doGet(req, resp);
     }
 
     private Object executorMethod(String mpath, HttpServletRequest request, HttpServletResponse response) {
@@ -109,7 +109,7 @@ public class DispatchServlet extends HttpServlet {
     public void getClasses(ArrayList<Class> classes, File file, ClassPool classPool) throws IOException, ClassNotFoundException {
         for (File listFile : file.listFiles()) {
             if (listFile == null || !file.exists()) {
-                return ;
+                return;
             }
             if (listFile.isDirectory()) {
                 getClasses(classes, listFile, classPool);
@@ -138,7 +138,7 @@ public class DispatchServlet extends HttpServlet {
             String packagePath = classpath + BASE_PACKAGE.replace(new String(new byte[]{(byte) 46}), "/");
 
             ArrayList<Class> classes = new ArrayList<>();
-            getClasses(classes, new File(packagePath) , classPool);
+            getClasses(classes, new File(packagePath), classPool);
 
             for (Class aClass : classes) {
                 if (aClass.isAnnotationPresent(RequstClass.class)) {
